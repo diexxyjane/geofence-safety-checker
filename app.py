@@ -1,63 +1,67 @@
 # app.py
 
 import streamlit as st
-from geofence_checker import check_address
-import re
 import pandas as pd
+import re
+from geofence_checker import check_address
 
-st.title("Geofencing Safety Checker - Copy & Paste Input")
+st.title("Geofencing Safety Checker")
 
 st.write("""
-Paste multiple addresses below in the following format (one per line):
-
-`Business Name - Address, City, State ZIP`
-
-Example:  
-The Oxford Apartments - 6009 Oxon Hill Rd Oxon Hill, MD 20745
+Enter up to 50 business locations below. You can leave the location_type empty; the system will try to detect sensitive locations automatically.
 """)
 
-# Text input box
-addresses_text = st.text_area("Paste addresses here", height=300)
+# Create a blank DataFrame with 50 rows
+num_rows = 50
+if 'input_data' not in st.session_state:
+    st.session_state['input_data'] = pd.DataFrame({
+        'Business Name': ['']*num_rows,
+        'Address': ['']*num_rows
+    })
+
+# Editable table for input
+input_df = st.experimental_data_editor(st.session_state['input_data'], num_rows=num_rows, use_container_width=True)
 
 if st.button("Check Safety"):
-    if not addresses_text.strip():
-        st.warning("Please paste at least one address")
-    else:
-        results = []
-        # Split lines
-        lines = addresses_text.strip().split("\n")
-        
-        for line in lines:
-            # Attempt to split name and address by ' - '
-            if " - " in line:
-                name_part, address_part = line.split(" - ", 1)
-            else:
-                # If no dash, just use entire line as address
-                name_part = line
-                address_part = line
-            
-            # Extract state from the address using regex (last 2 uppercase letters)
-            state_match = re.search(r",\s*([A-Z]{2})\s*\d{5}$", address_part)
-            if state_match:
-                state = state_match.group(1)
-            else:
-                state = "Unknown"
-            
-            # Use last word in address as location_type placeholder (can customize)
-            location_type = "Unknown"  # You can add logic to detect type if needed
-            
-            check = check_address(name_part, address_part, state, location_type)
-            results.append(check)
-        
-        # Display results
-        df = pd.DataFrame(results)
-        st.write(df)
-        
-        # Option to download
-        csv = df.to_csv(index=False).encode("utf-8")
-        st.download_button(
-            label="Download results as CSV",
-            data=csv,
-            file_name="geofence_results.csv",
-            mime="text/csv"
-        )
+    results = []
+    for _, row in input_df.iterrows():
+        name = str(row['Business Name']).strip()
+        address = str(row['Address']).strip()
+
+        if not name and not address:
+            continue  # skip empty rows
+
+        # Try to extract state (last 2 uppercase letters before ZIP)
+        state_match = re.search(r",\s*([A-Z]{2})\s*\d{5}$", address)
+        state = state_match.group(1) if state_match else "Unknown"
+
+        # Detect location_type automatically based on name keywords
+        sensitive_keywords = [
+            "daycare", "elementary", "middle school", "high school",
+            "children", "hospital", "playground", "activity center",
+            "museum", "nursing home", "cultural", "ethnic",
+            "place of worship", "homeless shelter", "rehab",
+            "ymca", "medical center", "assisted living"
+        ]
+        location_type = "Unknown"
+        for keyword in sensitive_keywords:
+            if keyword.lower() in name.lower() or keyword.lower() in address.lower():
+                location_type = keyword.title()
+                break
+
+        # Run safety check
+        check = check_address(name, address, state, location_type)
+        results.append(check)
+
+    # Show results
+    result_df = pd.DataFrame(results)
+    st.write(result_df)
+
+    # Download results
+    csv = result_df.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="Download Results as CSV",
+        data=csv,
+        file_name="geofence_results.csv",
+        mime="text/csv"
+    )
