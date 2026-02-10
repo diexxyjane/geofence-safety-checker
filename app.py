@@ -34,24 +34,24 @@ if st.button("Check Safety"):
         state_match = re.search(r",\s*([A-Z]{2})\s*\d{5}$", address)
         state = state_match.group(1) if state_match else "Unknown"
 
-# Auto detect sensitive location
-sensitive_keywords = [
-    "daycare", "elementary", "middle school", "high school",
-    "children", "hospital", "playground", "activity center",
-    "museum", "nursing home", "cultural", "ethnic",
-    "place of worship", "homeless shelter", "rehab",
-    "ymca", "medical center", "assisted living"
-]
+    # Auto detect sensitive location
+    sensitive_keywords = [
+        "daycare", "elementary", "middle school", "high school",
+        "children", "hospital", "playground", "activity center",
+        "museum", "nursing home", "cultural", "ethnic",
+        "place of worship", "homeless shelter", "rehab",
+        "ymca", "medical center", "assisted living"
+    ]
 
-location_type = "Unknown"
-force_not_safe = False  # flag for special cases
+    location_type = "Unknown"
+    force_not_safe = False  # flag for special cases
 
-for keyword in sensitive_keywords:
-    if keyword.lower() in name.lower() or keyword.lower() in address.lower():
-        location_type = keyword.title()
-        if keyword.lower() == "ymca":
-            force_not_safe = True  # always mark YMCA as NOT SAFE
-        break
+    for keyword in sensitive_keywords:
+        if keyword.lower() in name.lower() or keyword.lower() in address.lower():
+            location_type = keyword.title()
+            if keyword.lower() == "ymca":
+                force_not_safe = True  # always mark YMCA as NOT SAFE
+            break
 
 
         check = check_address(name, address, state, location_type)
@@ -67,5 +67,6 @@ for keyword in sensitive_keywords:
         file_name="geofence_results.csv",
         mime="text/csv"
     )
+
 
 
