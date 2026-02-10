@@ -1,7 +1,5 @@
 # geofence_checker.py
 
-# Core rules
-
 restricted_states_medical = ["NV", "NY", "MA", "WA", "MD", "OR", "CA"]
 
 restricted_locations = [
@@ -12,40 +10,32 @@ restricted_locations = [
     "Rehabilitation Center"
 ]
 
-modpa_restricted_distance = 1750  # in feet
+modpa_restricted_distance = 1750
 modpa_states = ["MD"]
-
 military_bases = ["Military Base"]
-
-high_school_parking_allowed = True
 high_school_parking_restricted_states = ["MD"]
 
 def check_address(name, address, state, location_type):
     reasons = []
     safe = True
     
-    # Restricted states for medical locations
     if location_type.lower() in ["hospital", "medical center"] and state in restricted_states_medical:
         safe = False
         reasons.append(f"Cannot geofence medical location in {state}")
     
-    # Restricted location types
     for loc in restricted_locations:
         if loc.lower() in location_type.lower() or loc.lower() in name.lower():
             safe = False
             reasons.append(f"Targeting {loc} is not allowed")
     
-    # High school parking rules
     if "high school" in location_type.lower() or "high school" in name.lower():
         if state in high_school_parking_restricted_states:
             safe = False
             reasons.append(f"High school parking lots are not allowed in {state}")
     
-    # Military base
     if any(base.lower() in location_type.lower() or base.lower() in name.lower() for base in military_bases):
         reasons.append("Only public entrances are allowed for military bases")
     
-    # MODPA Maryland check
     if state in modpa_states and location_type.lower() in ["mental health facility", "sexual health facility", "reproductive health facility"]:
         safe = False
         reasons.append("MODPA: Geofencing within 1750ft of this facility is prohibited")
