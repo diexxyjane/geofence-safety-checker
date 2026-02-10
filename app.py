@@ -5,7 +5,7 @@ import pandas as pd
 import re
 from geofence_checker import check_address
 
-st.title("Geofencing Safety Checker - Multi-row Input")
+st.title("Geofencing Safety Checker")
 st.write("Enter up to 50 business locations. Leave location_type empty; system will auto-detect sensitive locations.")
 
 num_rows = 50
@@ -61,3 +61,4 @@ if st.button("Check Safety"):
         file_name="geofence_results.csv",
         mime="text/csv"
     )
+
