@@ -9,7 +9,7 @@ st.set_page_config(page_title="Geofencing Safety Checker", layout="wide")
 st.title("Geofencing Safety Checker")
 st.write("""
 Enter up to 50 business locations below.  
-The system will detect sensitive locations like YMCA, schools, hospitals, nursing homes, religious organizations, and more.
+The system will detect sensitive locations like schools, hospitals, nursing homes, religious organizations, and more.
 """)
 
 num_rows = 50
@@ -154,3 +154,4 @@ if st.button("Check Safety"):
         file_name="geofence_results.csv",
         mime="text/csv"
     )
+
