@@ -6,7 +6,10 @@ import re
 from geofence_checker import check_address
 
 st.title("Geofencing Safety Checker")
-st.write("Enter up to 50 business locations. Leave location_type empty; system will auto-detect sensitive locations.")
+st.write("""
+Enter up to 50 business locations below.  
+The system will automatically detect sensitive locations like YMCA, schools, hospitals, and more.
+""")
 
 num_rows = 50
 if 'input_data' not in st.session_state:
@@ -15,10 +18,10 @@ if 'input_data' not in st.session_state:
         'Address': ['']*num_rows
     })
 
-# Use the correct Data Editor
+# Editable table
 input_df = st.data_editor(
-    st.session_state['input_data'], 
-    num_rows=num_rows, 
+    st.session_state['input_data'],
+    num_rows=num_rows,
     use_container_width=True
 )
 
@@ -30,36 +33,18 @@ if st.button("Check Safety"):
         if not name and not address:
             continue
 
-        # Extract state
+        # Flexible state detection (2 uppercase letters near end of line)
         state_match = re.search(r",\s*([A-Z]{2})\s*\d{5}$", address)
         state = state_match.group(1) if state_match else "Unknown"
 
-    # Auto detect sensitive location
-    sensitive_keywords = [
-        "daycare", "elementary", "middle school", "high school",
-        "children", "hospital", "playground", "activity center",
-        "museum", "nursing home", "cultural", "ethnic",
-        "place of worship", "homeless shelter", "rehab",
-        "ymca", "medical center", "assisted living"
-    ]
-
-    location_type = "Unknown"
-    force_not_safe = False  # flag for special cases
-
-    for keyword in sensitive_keywords:
-        if keyword.lower() in name.lower() or keyword.lower() in address.lower():
-            location_type = keyword.title()
-            if keyword.lower() == "ymca":
-                force_not_safe = True  # always mark YMCA as NOT SAFE
-            break
-
-
-        check = check_address(name, address, state, location_type)
+        # Run safety check
+        check = check_address(name, address, state)
         results.append(check)
 
     result_df = pd.DataFrame(results)
     st.write(result_df)
 
+    # Download CSV
     csv = result_df.to_csv(index=False).encode('utf-8')
     st.download_button(
         label="Download Results as CSV",
@@ -67,6 +52,3 @@ if st.button("Check Safety"):
         file_name="geofence_results.csv",
         mime="text/csv"
     )
-
-
-
