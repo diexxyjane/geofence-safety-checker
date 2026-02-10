@@ -5,7 +5,7 @@ import pandas as pd
 import re
 from geofence_checker import check_address
 
-st.title("Geofencing Safety Checker")
+st.title("Geofencing Safety Checker - Multi-row Input")
 
 st.write("""
 Enter up to 50 business locations below. You can leave the location_type empty; the system will try to detect sensitive locations automatically.
