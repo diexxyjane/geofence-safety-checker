@@ -100,16 +100,28 @@ if 'input_data' not in st.session_state:
     })
 
 # Reset Table button
-reset_clicked = st.button("Reset Table")
-
-if reset_clicked:
-    # Replace session state with empty table
-    st.session_state['input_data'] = pd.DataFrame({
+if st.button("Reset Table"):
+    # Create a new empty DataFrame
+    empty_df = pd.DataFrame({
         'Business Name': ['']*num_rows,
         'Address': ['']*num_rows
     })
-    # Instead of experimental_rerun(), just display the cleared table below
+    # Replace session state
+    st.session_state['input_data'] = empty_df
+    # Reassign editor variable to reflect changes
+    input_df = st.data_editor(
+        st.session_state['input_data'],
+        num_rows=num_rows,
+        use_container_width=True
+    )
     st.success("Table has been reset! You can start entering new addresses.")
+else:
+    # Normal editor display
+    input_df = st.data_editor(
+        st.session_state['input_data'],
+        num_rows=num_rows,
+        use_container_width=True
+    )
 
 
 # Editable input table
@@ -146,4 +158,5 @@ if st.button("Check Safety"):
         file_name="geofence_results.csv",
         mime="text/csv"
     )
+
 
